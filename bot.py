@@ -255,7 +255,7 @@ async def cb_show_intro(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     query = update.callback_query
     await query.answer()
     keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("شروع ثبت‌نام", callback_data="begin_registration")]])
-    await query.edit_message_text(
+    await query.edit_message_text_caption(
         "⏳ شما ۵۰ دقیقه فرصت دارید ثبت‌نام را تکمیل کنید؛ در غیر این صورت، ثبت‌نام لغو خواهد شد.",
         reply_markup=keyboard,
     )
