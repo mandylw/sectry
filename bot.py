@@ -29,7 +29,7 @@ import os
 
 
 #extra var
-Text_place_holder = os.environ.get("TEXT", "متن پیش‌فرض دلخواه خودت")
+Text_place_holder = "🎉 تبریک! شما جزو ۷ تیم اول ثبت‌نام‌کننده هستید! 🥳\nفقط با تکمیل ثبت‌نام، ۲۰۰ هزار تومان تخفیف ویژه روی ورودی تیم‌تون دریافت می‌کنید. 🔥"
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=getattr(logging, config.LOG_LEVEL, logging.INFO),
