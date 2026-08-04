@@ -241,10 +241,12 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     keyboard = InlineKeyboardMarkup(
         [[InlineKeyboardButton("🎮 ثبت‌نام در تورنمنت", callback_data="show_intro")]]
     )
+    with open("start_caption.txt", "r", encoding="utf-8") as f:
+        caption_text = f.read()
     with open("PHTO1.jpg", "rb") as photo:
         await update.message.reply_photo(
             photo=photo,
-            caption="به ربات ثبت‌نام تورنمنت Mobile Legends خوش آمدید!",
+            caption=caption_text,
             reply_markup=keyboard,
         )
 
