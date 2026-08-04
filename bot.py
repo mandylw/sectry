@@ -25,11 +25,11 @@ from telegram.ext import (
 import config
 import storage
 import validators
-
+import os
 
 
 #extra var
-Text_place_holder = "here is the txt"
+Text_place_holder = os.environ.get("TEXT", "متن پیش‌فرض دلخواه خودت")
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=getattr(logging, config.LOG_LEVEL, logging.INFO),
