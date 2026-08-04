@@ -1,16 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-ربات ثبت‌نام تورنمنت Mobile Legends.
-
-روند ثبت‌نام کاملاً با ConversationHandler پیاده‌سازی شده (بدون متغیر
-دستی برای مرحله)، وضعیت هر کاربر با PicklePersistence روی دیسک نگه
-داشته می‌شود و تمام اطلاعات نهایی به‌صورت پیام در گروه ادمین آرشیو
-می‌شوند — بدون استفاده از هیچ دیتابیسی.
-
-اجرا:
-    python bot.py
-(قبلش توکن و شناسه‌های گروه/ادمین را در config.py تنظیم کنید.)
-"""
 
 import base64
 import io
@@ -119,6 +107,7 @@ def _placeholder_photo() -> io.BytesIO:
 
 def calculate_cost(members_count: int) -> int:
     """هزینهٔ نهایی را طبق فرمول اعلام‌شده محاسبه می‌کند."""
+    FREE_MEMBERS = 6
     if members_count <= config.MIN_MEMBERS:
         return config.BASE_COST
     extra = members_count - config.MIN_MEMBERS
