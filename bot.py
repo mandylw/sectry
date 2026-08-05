@@ -560,7 +560,11 @@ async def receive_member_photo(update: Update, context: ContextTypes.DEFAULT_TYP
     squad["cost"] = cost
 
     await update.message.reply_text(
-        f"💰 هزینهٔ نهایی ثبت‌نام اسکواد شما: {cost:,} تومان\n\nلطفاً تصویر رسید پرداخت را ارسال کنید:"
+        f"💰 هزینهٔ نهایی ثبت‌نام اسکواد شما: {cost:,} تومان\n\n"
+        f"💳 لطفاً مبلغ فوق را به شمارهٔ کارت زیر واریز کنید:\n"
+        f"6219861978028610\n"
+        f"به نام: سروش بیات\n\n"
+        f"سپس تصویر رسید پرداخت را ارسال کنید:"
     )
     return STATE_PAYMENT_RECEIPT
 
