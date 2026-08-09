@@ -30,7 +30,7 @@ ADMIN_IDS = [5968015463]
 # هزینه‌ها (به تومان یا هر واحد دلخواه)
 # ─────────────────────────────────────────────────────────────
 BASE_COST = 800000            # هزینهٔ پایه (تا 6 عضو)
-EXTRA_PLAYER_COST = 20_000      # هزینهٔ هر عضو اضافه بر 6 نفر
+EXTRA_PLAYER_COST = 0      # هزینهٔ هر عضو اضافه بر 6 نفر
 
 # ─────────────────────────────────────────────────────────────
 # زمان مجاز برای تکمیل ثبت‌نام (بر حسب ثانیه) — پیش‌فرض ۵۰ دقیقه
@@ -67,3 +67,32 @@ PERSISTENCE_FILE = "bot_persistence.pickle"
 PERSISTENCE_UPDATE_INTERVAL = 1
 
 LOG_LEVEL = "INFO"
+
+REQUIRED_CHATS = [
+    {"chat_id": -100XXXXXXXXXX, "title": "گروه اول", "invite_link": "https://t.me/+xxxxxxxxxxxxx"},
+    {"chat_id": -100YYYYYYYYYY, "title": "گروه دوم", "invite_link": "https://t.me/+yyyyyyyyyyyyy"},
+    {"chat_id": -100ZZZZZZZZZZ, "title": "کانال", "invite_link": "https://t.me/+zzzzzzzzzzzzz"},
+]
+
+
+EARLY_BIRD_LIMIT = 8
+EARLY_BIRD_DISCOUNT = 200_000
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
