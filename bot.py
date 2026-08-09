@@ -237,18 +237,61 @@ async def cleanup_squad(context, squad: dict) -> None:
 # شروع کار
 # ─────────────────────────────────────────────────────────────
 
-async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+
+async def is_user_in_required_chats(context: ContextTypes.DEFAULT_TYPE, user_id: int) -> bool:
+    for chat in config.REQUIRED_CHATS:
+        try:
+            member = await context.bot.get_chat_member(chat["chat_id"], user_id)
+            if member.status in ("left", "kicked"):
+                return False
+        except Exception:
+            return False
+    return True
+
+
+def build_join_keyboard() -> InlineKeyboardMarkup:
+    buttons = [[InlineKeyboardButton(chat["title"], url=chat["invite_link"])] for chat in config.REQUIRED_CHATS]
+    buttons.append([InlineKeyboardButton("✅ بررسی دوباره", callback_data="check_membership")])
+    return InlineKeyboardMarkup(buttons)
+
+
+
+async def send_start_message(chat_id: int, context: ContextTypes.DEFAULT_TYPE) -> None:
     keyboard = InlineKeyboardMarkup(
         [[InlineKeyboardButton("🎮 ثبت‌نام در تورنمنت", callback_data="show_intro")]]
     )
     with open("startcaption.txt", "r", encoding="utf-8") as f:
         caption_text = f.read()
     with open("PHTO1.jpg", "rb") as photo:
-        await update.message.reply_photo(
+        await context.bot.send_photo(
+            chat_id=chat_id,
             photo=photo,
             caption=caption_text,
             reply_markup=keyboard,
         )
+
+
+async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user_id = update.effective_user.id
+    if not await is_user_in_required_chats(context, user_id):
+        await update.message.reply_text(
+            "برای استفاده از ربات، ابتدا باید عضو موارد زیر شوید:",
+            reply_markup=build_join_keyboard(),
+        )
+        return
+    await send_start_message(update.effective_chat.id, context)
+
+
+async def cb_check_membership(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    user_id = update.effective_user.id
+    if await is_user_in_required_chats(context, user_id):
+        await query.answer("عضویت تایید شد ✅")
+        await query.message.delete()
+        await send_start_message(update.effective_chat.id, context)
+    else:
+        await query.answer("هنوز عضو همهٔ موارد نشدید ❌", show_alert=True)
+
 
 
 async def cb_show_intro(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -760,6 +803,7 @@ def main() -> None:
     )
 
     application.add_handler(CommandHandler("start", cmd_start))
+    application.add_handler(CallbackQueryHandler(cb_check_membership, pattern="^check_membership$"))
     application.add_handler(CallbackQueryHandler(cb_show_intro, pattern="^show_intro$"))
     application.add_handler(conv_handler)
     application.add_handler(
