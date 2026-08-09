@@ -29,7 +29,27 @@ import os
 
 
 #extra var
-Text_place_holder = "🎉 تبریک! شما جزو ۷ تیم اول ثبت‌نام‌کننده هستید! 🥳\nفقط با تکمیل ثبت‌نام، ۲۰۰ هزار تومان تخفیف ویژه روی ورودی تیم‌تون دریافت می‌کنید. 🔥"
+#Text_place_holder = "🎉 تبریک! شما جزو ۷ تیم اول ثبت‌نام‌کننده هستید! 🥳\nفقط با تکمیل ثبت‌نام، ۲۰۰ هزار تومان تخفیف ویژه روی ورودی تیم‌تون دریافت می‌کنید. 🔥"
+
+EARLY_BIRD_LIMIT = 9
+EARLY_BIRD_MESSAGE = (
+    "🎉🔥 تبریک\\! شما جزو ۸ تیم اول هستید\\! 🔥🎉\n"
+    "به پاس ثبت‌نام زودهنگام شما، ۲۰۰ هزار تومان تخفیف ویژه براتون در نظر گرفته شده\\! 🏆💰\n"
+    "💳 مبلغ اصلی ثبت‌نام:\n"
+    "~۱,۰۰۰,۰۰۰ تومان~\n"
+    "🎁 مبلغ قابل پرداخت شما:\n"
+    "💥 ۸۰۰,۰۰۰ تومان 💥\n"
+    "⏰ این تخفیف ویژه فقط برای ۸ تیم اول ثبت‌نام‌کننده در نظر گرفته شده و شما موفق شدید این امتیاز رو دریافت کنید\\! 🥳🏆\n"
+    "💳 لطفاً مبلغ ۸۰۰,۰۰۰ تومان رو به شماره کارت زیر واریز کنید:\n"
+    "`6219861978028610`\n"
+    "👤 به نام: سروش بیات\n"
+    "📸 پس از پرداخت، تصویر رسید رو ارسال کنید تا ثبت‌نام تیم شما نهایی بشه\\.\n"
+    "🚀 تبریک می‌گیم؛ شما یکی از اولین تیم‌های این تورنمنت هستید\\! 🏆🔥"
+)
+
+
+
+
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=getattr(logging, config.LOG_LEVEL, logging.INFO),
@@ -46,6 +66,7 @@ admin_queue: storage.AdminMessageQueue | None = None
 # ─────────────────────────────────────────────────────────────
 (
     STATE_SQUAD_NAME,
+    STATE_SQUAD_LOGO,
     STATE_LEADER_FULLNAME,
     STATE_LEADER_IGN,
     STATE_LEADER_GAMEID,
@@ -60,7 +81,7 @@ admin_queue: storage.AdminMessageQueue | None = None
     STATE_MEMBER_PHONE,
     STATE_MEMBER_PHOTO,
     STATE_PAYMENT_RECEIPT,
-) = range(15)
+) = range(16)
 
 STATUS_LABELS = {
     "collecting": "در حال تکمیل اطلاعات",
@@ -214,7 +235,11 @@ async def delete_admin_message(context, message_id: int) -> None:
 
 
 async def push_squad_status(context, squad: dict) -> None:
-    await finalize_text(context, squad["message_ids"]["squad_info"], build_squad_info_text(squad))
+    text = build_squad_info_text(squad)
+    if squad.get("logo_file_id"):
+        await edit_caption(context, squad["message_ids"]["squad_info"], text)
+    else:
+        await finalize_text(context, squad["message_ids"]["squad_info"], text)
 
 
 async def cleanup_squad(context, squad: dict) -> None:
@@ -309,7 +334,7 @@ async def cb_begin_registration(update: Update, context: ContextTypes.DEFAULT_TY
     await query.answer()
     context.user_data.clear()
     await query.edit_message_reply_markup(reply_markup=None)
-    await context.bot.send_message(update.effective_chat.id,Text_place_holder)
+    #await context.bot.send_message(update.effective_chat.id,Text_place_holder)
     await context.bot.send_message(update.effective_chat.id ,"لطفاً نام اسکواد خود را ارسال کنید:")
     return STATE_SQUAD_NAME
 
@@ -358,10 +383,37 @@ async def receive_squad_name(update: Update, context: ContextTypes.DEFAULT_TYPE)
     context.user_data["squad_id"] = squad_id
     context.user_data["squad_name"] = name
 
+    await update.message.reply_text("🖼 لطفاً لوگوی اسکواد را ارسال کنید:")
+    return STATE_SQUAD_LOGO
+
+
+
+#لوگوی اسکواد؟
+
+async def receive_squad_logo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if not update.message.photo:
+        await update.message.reply_text("❗️ لطفاً یک تصویر ارسال کنید.")
+        return STATE_SQUAD_LOGO
+
+    file_id = update.message.photo[-1].file_id
+    squad = context.bot_data["squads"][context.user_data["squad_id"]]
+    squad["logo_file_id"] = file_id
+
+    bot = context.bot
+    old_message_id = squad["message_ids"]["squad_info"]
+    msg = await admin_queue.enqueue(
+        lambda: bot.send_photo(config.ADMIN_GROUP_ID, file_id, caption=build_squad_info_text(squad))
+    )
+    squad["message_ids"]["squad_info"] = msg.message_id
+    await delete_admin_message(context, old_message_id)
+
     await update.message.reply_text(
         "اطلاعات لیدر را وارد می‌کنیم.\n\n👤 لطفاً نام و نام خانوادگی خود را (فقط به فارسی) ارسال کنید:"
     )
     return STATE_LEADER_FULLNAME
+
+
+
 
 
 # ─────────────────────────────────────────────────────────────
@@ -602,13 +654,19 @@ async def receive_member_photo(update: Update, context: ContextTypes.DEFAULT_TYP
     cost = calculate_cost(members_count)
     squad["cost"] = cost
 
-    await update.message.reply_text(
-        f"💰 هزینهٔ نهایی ثبت‌نام اسکواد شما: {cost:,} تومان\n\n"
-        f"💳 لطفاً مبلغ فوق را به شمارهٔ کارت زیر واریز کنید:\n"
-        f"6219861978028610\n"
-        f"به نام: سروش بیات\n\n"
-        f"سپس تصویر رسید پرداخت را ارسال کنید:"
-    )
+    remaining = context.bot_data.setdefault("early_bird_remaining", EARLY_BIRD_LIMIT)
+    if remaining > 0:
+        context.bot_data["early_bird_remaining"] = remaining - 1
+        await update.message.reply_text(EARLY_BIRD_MESSAGE, parse_mode="MarkdownV2")
+    else:
+        await update.message.reply_text(
+            f"💰 هزینهٔ نهایی ثبت‌نام اسکواد شما: {cost:,} تومان\n\n"
+            f"💳 لطفاً مبلغ فوق را به شمارهٔ کارت زیر واریز کنید:\n"
+            f"6219861978028610\n"
+            f"به نام: سروش بیات\n\n"
+            f"سپس تصویر رسید پرداخت را ارسال کنید:"
+        )
+
     return STATE_PAYMENT_RECEIPT
 
 
@@ -777,6 +835,7 @@ def main() -> None:
         entry_points=[CallbackQueryHandler(cb_begin_registration, pattern="^begin_registration$")],
         states={
             STATE_SQUAD_NAME: [MessageHandler(text_filter, receive_squad_name), catch_all],
+            STATE_SQUAD_LOGO: [MessageHandler(filters.PHOTO, receive_squad_logo), catch_all],
             STATE_LEADER_FULLNAME: [MessageHandler(text_filter, receive_leader_fullname), catch_all],
             STATE_LEADER_IGN: [MessageHandler(text_filter, receive_leader_ign), catch_all],
             STATE_LEADER_GAMEID: [MessageHandler(text_filter, receive_leader_gameid), catch_all],
