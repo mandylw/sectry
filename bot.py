@@ -295,8 +295,12 @@ async def send_start_message(chat_id: int, context: ContextTypes.DEFAULT_TYPE) -
             reply_markup=keyboard,
         )
 
-
+REGISTRATION_OPEN = False  # 🔴 فردا موقعش که شد این رو کن True
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not REGISTRATION_OPEN:
+        await update.message.reply_text("⏳ ثبت‌نام هنوز شروع نشده. لطفاً بعداً دوباره تلاش کنید.")
+        return
+
     user_id = update.effective_user.id
     if not await is_user_in_required_chats(context, user_id):
         await update.message.reply_text(
