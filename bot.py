@@ -32,6 +32,7 @@ import os
 #Text_place_holder = "🎉 تبریک! شما جزو ۷ تیم اول ثبت‌نام‌کننده هستید! 🥳\nفقط با تکمیل ثبت‌نام، ۲۰۰ هزار تومان تخفیف ویژه روی ورودی تیم‌تون دریافت می‌کنید. 🔥"
 
 EARLY_BIRD_LIMIT = 9
+REGISTRATION_OPEN = False  # 🔴 فردا موقعش که شد این رو کن True
 EARLY_BIRD_MESSAGE = (
     "🎉🔥 تبریک\\! شما جزو ۸ تیم اول هستید\\! 🔥🎉\n"
     "به پاس ثبت‌نام زودهنگام شما، ۲۰۰ هزار تومان تخفیف ویژه براتون در نظر گرفته شده\\! 🏆💰\n"
@@ -295,7 +296,6 @@ async def send_start_message(chat_id: int, context: ContextTypes.DEFAULT_TYPE) -
             reply_markup=keyboard,
         )
 
-REGISTRATION_OPEN = False  # 🔴 فردا موقعش که شد این رو کن True
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not REGISTRATION_OPEN:
         await update.message.reply_text("⏳ ثبت‌نام هنوز شروع نشده. لطفاً بعداً دوباره تلاش کنید.")
