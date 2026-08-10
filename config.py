@@ -69,9 +69,21 @@ PERSISTENCE_UPDATE_INTERVAL = 1
 LOG_LEVEL = "INFO"
 
 REQUIRED_CHATS = [
-    {"chat_id": -100XXXXXXXXXX, "title": "گروه اول", "invite_link": "https://t.me/+xxxxxxxxxxxxx"},
-    {"chat_id": -100YYYYYYYYYY, "title": "گروه دوم", "invite_link": "https://t.me/+yyyyyyyyyyyyy"},
-    {"chat_id": -100ZZZZZZZZZZ, "title": "کانال", "invite_link": "https://t.me/+zzzzzzzzzzzzz"},
+    {
+        "chat_id": "@MistideyStreamgp",
+        "title": "گروه Mistidey",
+        "invite_link": "https://t.me/MistideyStreamgp",
+    },
+    {
+        "chat_id": "@MistideyStream",
+        "title": "کانال Mistidey Stream",
+        "invite_link": "https://t.me/MistideyStream",
+    },
+    {
+        "chat_id": "@MistideyTransfer",
+        "title": "کانال Mistidey Transfer",
+        "invite_link": "https://t.me/MistideyTransfer",
+    },
 ]
 
 
