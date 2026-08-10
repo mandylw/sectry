@@ -675,7 +675,7 @@ async def receive_member_photo(update: Update, context: ContextTypes.DEFAULT_TYP
     squad["cost"] = cost
 
     remaining = context.bot_data.setdefault("early_bird_remaining", EARLY_BIRD_LIMIT)
-    if remaining > 0:
+    if config.EARLY_BIRD_ENABLED and remaining > 0:
         context.bot_data["early_bird_remaining"] = remaining - 1
         await update.message.reply_text(EARLY_BIRD_MESSAGE, parse_mode="MarkdownV2")
     else:
