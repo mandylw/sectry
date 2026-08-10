@@ -72,6 +72,7 @@ admin_queue: storage.AdminMessageQueue | None = None
     STATE_LEADER_GAMEID,
     STATE_LEADER_ZONEID,
     STATE_LEADER_PHONE,
+    STATE_LEADER_TELEGRAM_ID,
     STATE_LEADER_PHOTO,
     STATE_MEMBERS_COUNT,
     STATE_MEMBER_FULLNAME,
@@ -81,7 +82,7 @@ admin_queue: storage.AdminMessageQueue | None = None
     STATE_MEMBER_PHONE,
     STATE_MEMBER_PHOTO,
     STATE_PAYMENT_RECEIPT,
-) = range(16)
+) = range(17)
 
 STATUS_LABELS = {
     "collecting": "در حال تکمیل اطلاعات",
@@ -484,9 +485,23 @@ async def receive_leader_phone(update: Update, context: ContextTypes.DEFAULT_TYP
     squad = context.bot_data["squads"][context.user_data["squad_id"]]
     squad["reserved_phones"].append(phone)
 
+    await update.message.reply_text("💬 لطفاً آیدی تلگرام خود را ارسال کنید (مثلاً @username):")
+    return STATE_LEADER_TELEGRAM_ID
+
+
+async def receive_leader_telegram_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    telegram_id = update.message.text.strip()
+    if not telegram_id:
+        await update.message.reply_text("❗️ لطفاً آیدی تلگرام خود را ارسال کنید (مثلاً @username):")
+        return STATE_LEADER_TELEGRAM_ID
+
+    if not telegram_id.startswith("@"):
+        telegram_id = "@" + telegram_id
+
+    context.user_data["leader_telegram_id"] = telegram_id
+
     await update.message.reply_text("🖼 لطفاً تصویر پروفایل بازی (اسکرین‌شات پروفایل) خود را ارسال کنید:")
     return STATE_LEADER_PHOTO
-
 
 async def receive_leader_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if not update.message.photo:
@@ -502,6 +517,7 @@ async def receive_leader_photo(update: Update, context: ContextTypes.DEFAULT_TYP
         "game_id": context.user_data["leader_game_id"],
         "zone_id": context.user_data["leader_zone_id"],
         "phone": context.user_data["leader_phone"],
+        "telegram_id": context.user_data["leader_telegram_id"],
         "photo_file_id": file_id,
     }
     squad["leader"] = leader
@@ -512,7 +528,8 @@ async def receive_leader_photo(update: Update, context: ContextTypes.DEFAULT_TYP
         f"IGN: {leader['ign']}\n"
         f"Game ID: {leader['game_id']}\n"
         f"Zone ID: {leader['zone_id']}\n"
-        f"شماره تلفن: {leader['phone']}"
+        f"شماره تلفن: {leader['phone']}\n"
+        f"آیدی تلگرام: {leader['telegram_id']}"
     )
     await finalize_photo(context, squad["message_ids"]["leader_info"], file_id, caption)
 
@@ -844,6 +861,7 @@ def main() -> None:
             STATE_LEADER_GAMEID: [MessageHandler(text_filter, receive_leader_gameid), catch_all],
             STATE_LEADER_ZONEID: [MessageHandler(text_filter, receive_leader_zoneid), catch_all],
             STATE_LEADER_PHONE: [MessageHandler(text_filter, receive_leader_phone), catch_all],
+            STATE_LEADER_TELEGRAM_ID: [MessageHandler(text_filter, receive_leader_telegram_id), catch_all],
             STATE_LEADER_PHOTO: [MessageHandler(filters.PHOTO, receive_leader_photo), catch_all],
             STATE_MEMBERS_COUNT: [MessageHandler(text_filter, receive_members_count), catch_all],
             STATE_MEMBER_FULLNAME: [MessageHandler(text_filter, receive_member_fullname), catch_all],
