@@ -11,6 +11,7 @@ import os
 # ─────────────────────────────────────────────────────────────
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 REGISTRATION_OPEN = os.getenv("REGISTRATION_OPEN", "false").lower() == "true"
+EARLY_BIRD_ENABLED = os.getenv("EARLY_BIRD_ENABLED", "true").lower() == "true"
 # ─────────────────────────────────────────────────────────────
 # شناسهٔ عددی گروه خصوصی ادمین
 # ربات باید در این گروه عضو و ادمین باشد (برای ارسال/ویرایش/حذف پیام).
