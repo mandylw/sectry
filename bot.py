@@ -296,7 +296,7 @@ async def send_start_message(chat_id: int, context: ContextTypes.DEFAULT_TYPE) -
         )
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not config.REGISTRATION_OPEN::
+    if not config.REGISTRATION_OPEN:
         await update.message.reply_text("⏳ ثبت‌نام هنوز شروع نشده. لطفاً بعداً دوباره تلاش کنید.")
         return
 
