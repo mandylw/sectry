@@ -4,6 +4,8 @@ import base64
 import io
 import logging
 import uuid
+import asyncio
+
 
 from telegram import (
     InlineKeyboardButton,
@@ -265,15 +267,15 @@ async def cleanup_squad(context, squad: dict) -> None:
 
 
 async def is_user_in_required_chats(context: ContextTypes.DEFAULT_TYPE, user_id: int) -> bool:
-    for chat in config.REQUIRED_CHATS:
+    async def check(chat):
         try:
             member = await context.bot.get_chat_member(chat["chat_id"], user_id)
-            if member.status in ("left", "kicked"):
-                return False
+            return member.status not in ("left", "kicked")
         except Exception:
             return False
-    return True
 
+    results = await asyncio.gather(*(check(chat) for chat in config.REQUIRED_CHATS))
+    return all(results)
 
 def build_join_keyboard() -> InlineKeyboardMarkup:
     buttons = [[InlineKeyboardButton(chat["title"], url=chat["invite_link"])] for chat in config.REQUIRED_CHATS]
@@ -856,9 +858,9 @@ def main() -> None:
         .token(config.BOT_TOKEN)
         .persistence(persistence)
         .post_init(post_init)
+        .concurrent_updates(20)
         .build()
     )
-
     text_filter = filters.TEXT & ~filters.COMMAND
     catch_all = MessageHandler(filters.ALL & ~filters.COMMAND, unexpected_input)
 
