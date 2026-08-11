@@ -676,8 +676,19 @@ async def receive_member_photo(update: Update, context: ContextTypes.DEFAULT_TYP
 
     remaining = context.bot_data.setdefault("early_bird_remaining", EARLY_BIRD_LIMIT)
     if config.EARLY_BIRD_ENABLED and remaining > 0:
-        context.bot_data["early_bird_remaining"] = remaining - 1
+        new_remaining = remaining - 1
+        context.bot_data["early_bird_remaining"] = new_remaining
         await update.message.reply_text(EARLY_BIRD_MESSAGE, parse_mode="MarkdownV2")
+
+        bot = context.bot
+        await admin_queue.enqueue(
+            lambda: bot.send_message(
+                config.ADMIN_GROUP_ID,
+                f"🎉 اسکواد «{squad['squad_name']}» تخفیف زودهنگام گرفت.\n"
+                f"تخفیف‌گرفته: {EARLY_BIRD_LIMIT - new_remaining} از {EARLY_BIRD_LIMIT}\n"
+                f"باقی‌مانده: {new_remaining}",
+            )
+        )
     else:
         await update.message.reply_text(
             f"💰 هزینهٔ نهایی ثبت‌نام اسکواد شما: {cost:,} تومان\n\n"
